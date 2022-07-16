@@ -60,4 +60,35 @@ app.MapPost("api/v1/commands", async (ICommandRepo repo, IMapper mapper, Command
     return Results.Created($"api/v1/commands/{cmdReadDto.Id}", cmdReadDto);
 });
 
+//Update
+app.MapPut("api/v1/commands/{id}", async (ICommandRepo repo, IMapper mapper, int id, CommandUpdateDto cmdUpdateDto) =>
+{
+    var command = await repo.GetCommandById(id);
+
+    if (command == null)
+        return Results.NotFound();
+
+    //mapping values from the update object to the actual command in memory
+    mapper.Map(cmdUpdateDto, command);
+    //then save the changes
+    await repo.SaveChanges();
+
+    return Results.NoContent();
+});
+
+//Delete
+app.MapDelete("api/v1/commands/{id}", async (ICommandRepo repo, IMapper mapper, int id) =>
+{
+    var command = await repo.GetCommandById(id);
+
+    if (command == null)
+        return Results.NotFound();
+
+    repo.DeleteCommand(command);
+
+    await repo.SaveChanges();
+
+    return Results.NoContent();
+});
+
 app.Run();
